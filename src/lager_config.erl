@@ -26,7 +26,7 @@
 
 new() ->
     %% set up the ETS configuration table
-    _ = try ets:new(?TBL, [named_table, public, set, {keypos, 1}, {read_concurrency, true}]) of
+    _ = try ets:new(?TBL, [named_table, public, set, {keypos, 1}]) of
         _Result ->
             ok
     catch

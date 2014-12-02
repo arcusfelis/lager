@@ -285,7 +285,7 @@ print(Map, Max, Options) ->
             {MapBody, Len} = map_body(Map, Max - 3, dec_depth(Options)),
             {[$#, ${, MapBody, $}], Len + 3};
         false ->
-            error(badarg, [Map, Max, Options])
+            erlang:error(badarg, [Map, Max, Options])
     end.
 
 %% Returns {List, Length}

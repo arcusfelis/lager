@@ -155,7 +155,7 @@ handle_info(_Info, State) ->
 %% @private
 terminate(_Reason, #state{fd=FD}) ->
     %% flush and close any file handles
-    _ = file:datasync(FD),
+    _ = file:sync(FD),
     _ = file:close(FD),
     ok.
 
@@ -225,7 +225,7 @@ do_write(#state{fd=FD, name=Name, flap=Flap} = State, Level, Msg) ->
     case (Level band SyncLevel) /= 0 of
         true ->
             %% force a sync on any message that matches the 'sync_on' bitmask
-            Flap2 = case file:datasync(FD) of
+            Flap2 = case file:sync(FD) of
                 {error, Reason2} when Flap == false ->
                     ?INT_LOG(error, "Failed to write log message to file ~s: ~s",
                         [Name, file:format_error(Reason2)]),
