@@ -25,6 +25,7 @@
 %% API
 -export([start/0,
         log/3, log/4,
+        lazy/1,
         md/0, md/1,
         trace/2, trace/3, trace_file/2, trace_file/3, trace_file/4, trace_console/1, trace_console/2,
         clear_all_traces/0, stop_trace/1, status/0, 
@@ -358,7 +359,8 @@ safe_format(Fmt, Args, Limit) ->
     safe_format(Fmt, Args, Limit, []).
 
 safe_format(Fmt, Args, Limit, Options) ->
-    try lager_trunc_io:format(Fmt, Args, Limit, Options)
+    try Args1 = prepare_lazy_args(Args),
+        lager_trunc_io:format(Fmt, Args1, Limit, Options)
     catch
         _:_ -> lager_trunc_io:format("FORMAT ERROR: ~p ~p", [Fmt, Args], Limit)
     end.
@@ -366,6 +368,19 @@ safe_format(Fmt, Args, Limit, Options) ->
 %% @private
 safe_format_chop(Fmt, Args, Limit) ->
     safe_format(Fmt, Args, Limit, [{chomp, true}]).
+
+prepare_lazy_args([{'$lager_lazy_arg', F}|T]) ->
+    H = F(),
+    [H|prepare_lazy_args(T)];
+prepare_lazy_args([H|T]) ->
+    [H|prepare_lazy_args(T)];
+prepare_lazy_args([]) ->
+    [].
+
+%% @doc Make a lazy function
+-spec lazy(fun()) -> term().
+lazy(F) ->
+    {'$lager_lazy_arg', F}.
 
 %% @doc Print a record lager found during parse transform
 pr(Record, Module) when is_tuple(Record), is_atom(element(1, Record)) ->
